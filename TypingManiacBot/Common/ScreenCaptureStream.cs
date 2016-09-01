@@ -10,7 +10,7 @@ namespace TypingBot.Common
     {
         private readonly IntPtr wndHandle;
         private readonly Rectangle region;
-        private readonly bool notifyNewFrame;
+        private readonly bool reqNextFrame;
 
         private readonly AutoResetEvent canContinue;
         private readonly AutoResetEvent canExit;
@@ -37,11 +37,11 @@ namespace TypingBot.Common
             NewFrame?.Invoke(this, new NewFrameArgs { Frame = frame });
         }
 
-        public ScreenCaptureStream(IntPtr wndHandle, Rectangle region, bool notifyNewFrame)
+        public ScreenCaptureStream(IntPtr wndHandle, Rectangle region, bool reqNextFrame)
         {
             this.wndHandle = wndHandle;
             this.region = region;
-            this.notifyNewFrame = notifyNewFrame;
+            this.reqNextFrame = reqNextFrame;
 
             canContinue = new AutoResetEvent(true);
             canExit = new AutoResetEvent(false);
@@ -70,31 +70,37 @@ namespace TypingBot.Common
             canContinue.Set();
         }
 
+        public void SleepAndGrabNextFrame(int timeout)
+        {
+            Thread.Sleep(timeout);
+            GrabNextFrame();
+        }
+
         private void worker()
         {
             int width = region.Width;
             int height = region.Height;
             int x = region.Location.X;
             int y = region.Location.Y;
-            bool notify = notifyNewFrame;
+            bool req = reqNextFrame;
 
 
             var screenshot = new Bitmap(width, height);
 
             var fromHwnd = Graphics.FromHwnd(wndHandle);
-            var graphics = Graphics.FromImage(screenshot);
+            var fromImage = Graphics.FromImage(screenshot);
 
             while (!canExit.WaitOne(0, false))
             {
-                if (notify)
+                if (req)
                     canContinue.WaitOne();
 
                 IntPtr hdc_screen = fromHwnd.GetHdc();
-                IntPtr hdc_screenshot = graphics.GetHdc();
+                IntPtr hdc_screenshot = fromImage.GetHdc();
 
                 BitBlt(hdc_screenshot, 0, 0, width, height, hdc_screen, x, y, (int)CopyPixelOperation.SourceCopy);
 
-                graphics.ReleaseHdc(hdc_screenshot);
+                fromImage.ReleaseHdc(hdc_screenshot);
                 fromHwnd.ReleaseHdc(hdc_screen);
 
                 OnNewFrame(screenshot);
@@ -105,7 +111,7 @@ namespace TypingBot.Common
             screenshot.Dispose();
 
             fromHwnd.Dispose();
-            graphics.Dispose();
+            fromImage.Dispose();
         }
 
         [DllImport("gdi32.dll")]

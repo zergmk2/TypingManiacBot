@@ -55,7 +55,7 @@ namespace TypingBot
 
         private void screenCapture_NewFrame(object sender, NewFrameArgs eventArgs)
         {
-            //eventArgs.Frame.Save($"Test\\{eventArgs.Frame.GetHashCode().ToString()}.bmp");
+            //eventArgs.Frame.Save($"Test\\{Guid.NewGuid().ToString()}.bmp");
 
             blobDetector.ProcessImage(eventArgs.Frame);
         }
@@ -67,6 +67,8 @@ namespace TypingBot
                 screenCapture.GrabNextFrame();
                 return;
             }
+
+            //Console.WriteLine("A");
 
             BlobPreview.InvokeAction(() => BlobPreview.Image = new Bitmap(e.Blobs.First()));
 
@@ -83,7 +85,7 @@ namespace TypingBot
         {
             if (!e.IsTextRecognized)
             {
-                screenCapture.GrabNextFrame();
+                screenCapture.SleepAndGrabNextFrame(250);
                 return;
             }
 

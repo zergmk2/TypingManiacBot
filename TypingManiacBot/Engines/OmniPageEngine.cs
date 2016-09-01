@@ -32,31 +32,16 @@ namespace TypingBot.Engines
             );
         }
 
-        public async void ProcessImage(Bitmap image)
+        public void ProcessImage(Bitmap image)
         {
-            await Task.Run
-            (() => doWork
-            (
-               new Params
-               {
-                   Image = image
-               }
-            ));
+            Task.Run(() => doWork(new Params { Image = image })).Wait();
 
             OnRecognizedText(null, false);
         }
 
         public void ProcessImages(IEnumerable<Bitmap> images)
         {
-            Parallel.ForEach(images,
-            (image) =>
-            {
-                var p = new Params
-                {
-                    Image = image
-                };
-                doWork(p);
-            });
+            Parallel.ForEach(images, image => { doWork(new Params { Image = image }); });
 
             OnRecognizedText(null, false);
         }
@@ -69,6 +54,8 @@ namespace TypingBot.Engines
             using (var settings = new SettingCollection())
             {
                 settings.DefaultRecognitionModule = RECOGNITIONMODULE.RM_OMNIFONT_PLUS3W;
+                settings.DefaultFillingMethod = FILLINGMETHOD.FM_OMNIFONT;
+                settings.DefaultFilter = CHR_FILTER.FILTER_UPPERCASE;
 
                 var info = new IMG_INFO
                 {
@@ -88,25 +75,22 @@ namespace TypingBot.Engines
                     var letters = Page[IMAGEINDEX.II_CURRENT].GetLetters();
 
                     if (letters.Length == 0)
-                    {
-                        OnRecognizedText(null, false);
                         return;
-                    }
 
                     var text = string.Empty;
 
                     foreach (LETTER letter in letters)
                     {
-                        text += letter.code;
+                        if (!char.IsWhiteSpace(letter.code))
+                            text += letter.code;
                     }
 
-                    //if (isLenMinFourAndLettersOnly(text))
-                    OnRecognizedText(text, true);
+                    if (isLenMinFourAndLettersOnly(text))
+                        OnRecognizedText(text, true);
                 }
             }
         }
 
-        [Obsolete]
         private bool isLenMinFourAndLettersOnly(string s)
         {
             return Regex.IsMatch(s, "^[A-Z]{4,}$");
