@@ -4,7 +4,6 @@ using TypingBot.Contracts;
 using TypingBot.EventArgs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
 using TypingBot.Models;
 using Nuance.OmniPage.CSDK.Objects;
 using Nuance.OmniPage.CSDK.ArgTypes;
