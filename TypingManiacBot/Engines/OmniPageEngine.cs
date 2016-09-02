@@ -50,7 +50,7 @@ namespace TypingBot.Engines
         {
             var p = o as Params;
 
-            using (var scaledImage = ScaleImage(p.Image, 3.0f))
+            using (var scaledImage = scaleImage(p.Image, 3.0f))
             using (var settings = new SettingCollection())
             {
                 settings.DefaultRecognitionModule = RECOGNITIONMODULE.RM_OMNIFONT_PLUS3W;
@@ -85,18 +85,12 @@ namespace TypingBot.Engines
                             text += letter.code;
                     }
 
-                    if (isLenMinFourAndLettersOnly(text))
-                        OnRecognizedText(text, true);
+                    OnRecognizedText(text, true);
                 }
             }
         }
 
-        private bool isLenMinFourAndLettersOnly(string s)
-        {
-            return Regex.IsMatch(s, "^[A-Z]{4,}$");
-        }
-
-        private Bitmap ScaleImage(Bitmap img, float percentage)
+        private Bitmap scaleImage(Bitmap img, float percentage)
         {
             int originalW = img.Width;
             int originalH = img.Height;
