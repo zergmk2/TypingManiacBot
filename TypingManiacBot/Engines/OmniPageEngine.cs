@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using TypingBot.Models;
 using Nuance.OmniPage.CSDK.Objects;
 using Nuance.OmniPage.CSDK.ArgTypes;
+using System.Threading;
+using System.Linq;
 
 namespace TypingBot.Engines
 {
@@ -33,14 +35,33 @@ namespace TypingBot.Engines
 
         public void ProcessImage(Bitmap image)
         {
-            Task.Run(() => doWork(new Params { Image = image })).Wait();
+            var waitHandle = new CountdownEvent(1);
+
+            ThreadPool.QueueUserWorkItem
+            (
+                new WaitCallback(doWork), 
+                new Params { Image = image, WaitHandle = waitHandle }
+            );
+
+            waitHandle.Wait();
 
             OnRecognizedText(null, false);
         }
 
         public void ProcessImages(IEnumerable<Bitmap> images)
         {
-            Parallel.ForEach(images, image => { doWork(new Params { Image = image }); });
+            var waitHandle = new CountdownEvent(images.Count());
+
+            foreach (Bitmap image in images)
+            {
+                ThreadPool.QueueUserWorkItem
+                (
+                    new WaitCallback(doWork),
+                    new Params { Image = image, WaitHandle = waitHandle }
+                );
+            }
+
+            waitHandle.Wait();
 
             OnRecognizedText(null, false);
         }
@@ -74,7 +95,10 @@ namespace TypingBot.Engines
                     var letters = Page[IMAGEINDEX.II_CURRENT].GetLetters();
 
                     if (letters.Length == 0)
+                    {
+                        p.WaitHandle.Signal();
                         return;
+                    }
 
                     var text = string.Empty;
 
@@ -87,6 +111,8 @@ namespace TypingBot.Engines
                     OnRecognizedText(text, true);
                 }
             }
+
+            p.WaitHandle.Signal();
         }
 
         private Bitmap scaleImage(Bitmap img, float percentage)
