@@ -72,12 +72,6 @@ namespace TypingBot
 
             BlobPreview.InvokeAction(() => BlobPreview.Image = new Bitmap(e.Blobs.First()));
 
-            if (e.Blobs.Count() == 1)
-            {
-                ocrEngine.ProcessImage(e.Blobs.First());
-                return;
-            }
-
             ocrEngine.ProcessImages(e.Blobs);
         }
 
