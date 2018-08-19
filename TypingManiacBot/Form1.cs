@@ -5,9 +5,11 @@ using TypingBot.Contracts;
 using TypingBot.EventArgs;
 using TypingBot.Extensions;
 using TypingBot.WinAPI;
-using TypingBot.Common;
+//using TypingBot.Common;
 using System.Linq;
 using System.Threading.Tasks;
+using Accord.Video;
+using System.Runtime.InteropServices;
 
 namespace TypingBot
 {
@@ -18,19 +20,18 @@ namespace TypingBot
         private readonly IOCREngine ocrEngine;
         private readonly IBlobDetector blobDetector;
 
-        private readonly ScreenCaptureStream screenCapture;
+        private readonly WindowCaptureStream windowCapture;
 
         public Form1(IOCREngine ocrEngine, IBlobDetector blobDetector)
         {
             InitializeComponent();
 
-            screenCapture = new ScreenCaptureStream
+            windowCapture = new WindowCaptureStream
             (
                 webBrowser1.Handle,
-                new Rectangle(72, 5, 273, 145),
-                true
+                new Rectangle(0, 0, webBrowser1.Width, webBrowser1.Height)
             );
-            screenCapture.NewFrame += screenCapture_NewFrame;
+            windowCapture.NewFrame += WindowCapture_NewFrame;
 
             this.ocrEngine = ocrEngine;
             this.ocrEngine.RecognizedText += ocrEngine_RecognizedText;
@@ -39,37 +40,32 @@ namespace TypingBot
             this.blobDetector.DetectedBlobs += blobDetector_DetectedBlobs;
         }
 
+        private void ScreenCaptureStream_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        {
+            BlobPreview.Image = eventArgs.Frame;
+        }
+
         private void button1_Click(object sender, System.EventArgs e)
         {
-            if (screenCapture.IsRunning)
+            if (windowCapture.IsRunning)
             {
-                screenCapture.Stop();
+                windowCapture.Stop();
                 btnStart.Text = "Start";
             }
             else
             {
-                screenCapture.Start();
+                windowCapture.Start();
                 btnStart.Text = "Stop";
             }
         }
 
-        private void screenCapture_NewFrame(object sender, NewFrameArgs eventArgs)
+        private void WindowCapture_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-            //eventArgs.Frame.Save($"Test\\{Guid.NewGuid().ToString()}.bmp");
-
             blobDetector.ProcessImage(eventArgs.Frame);
         }
 
         private void blobDetector_DetectedBlobs(object sender, DetectedBlobsArgs e)
         {
-            if (!e.IsBlobsDetected)
-            {
-                screenCapture.GrabNextFrame();
-                return;
-            }
-
-            //Console.WriteLine("A");
-
             BlobPreview.InvokeAction(() => BlobPreview.Image = new Bitmap(e.Blobs.First()));
 
             ocrEngine.ProcessImages(e.Blobs);
@@ -77,12 +73,6 @@ namespace TypingBot
 
         private void ocrEngine_RecognizedText(object sender, RecognizedTextArgs e)
         {
-            if (!e.IsTextRecognized)
-            {
-                screenCapture.SleepAndGrabNextFrame(250);
-                return;
-            }
-
             txtOutput.InvokeAction(() => txtOutput.Text = e.Text);
         }
 

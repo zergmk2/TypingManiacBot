@@ -3,134 +3,105 @@ using System.Drawing;
 using TypingBot.Contracts;
 using TypingBot.EventArgs;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using TypingBot.Models;
 using Nuance.OmniPage.CSDK.Objects;
 using Nuance.OmniPage.CSDK.ArgTypes;
 using System.Threading;
-using System.Linq;
 
 namespace TypingBot.Engines
 {
     public class OmniPageEngine : IOCREngine
     {
+        private readonly SettingCollection _settings;
+
         public OmniPageEngine()
         {
             Engine.Init(null, null, csdkpath: @"C:\Program Files (x86)\Nuance\OPCaptureSDK20\Bin");
+
+            _settings = new SettingCollection
+            {
+                DefaultRecognitionModule = RECOGNITIONMODULE.RM_AUTO,
+                DefaultFillingMethod = FILLINGMETHOD.FM_DEFAULT,
+                DefaultFilter = CHR_FILTER.FILTER_UPPERCASE
+            };
         }
 
         public event EventHandler<RecognizedTextArgs> RecognizedText;
-        private void OnRecognizedText(string text, bool isTextRecognized)
+        private void OnRecognizedText(string text)
         {
             RecognizedText?.Invoke
             (
                 this, 
                 new RecognizedTextArgs
                 {
-                    Text = text,
-                    IsTextRecognized = isTextRecognized
+                    Text = text                  
                 }
             );
         }
 
         public void ProcessImage(Bitmap image)
         {
-            var waitHandle = new CountdownEvent(1);
-
             ThreadPool.QueueUserWorkItem
             (
                 new WaitCallback(doWork), 
-                new Params { Image = image, WaitHandle = waitHandle }
+                new Params { Image = image }
             );
-
-            waitHandle.Wait();
-
-            OnRecognizedText(null, false);
         }
 
         public void ProcessImages(IEnumerable<Bitmap> images)
         {
-            var waitHandle = new CountdownEvent(images.Count());
-
             foreach (Bitmap image in images)
             {
                 ThreadPool.QueueUserWorkItem
                 (
                     new WaitCallback(doWork),
-                    new Params { Image = image, WaitHandle = waitHandle }
+                    new Params { Image = image }
                 );
-            }
-
-            waitHandle.Wait();
-
-            OnRecognizedText(null, false);
+            }          
         }
 
         private void doWork(object o)
         {
-            var p = o as Params;
+            var data = o as Params;
 
-            using (var scaledImage = scaleImage(p.Image, 3.0f))
-            using (var settings = new SettingCollection())
+            var info = new IMG_INFO
             {
-                settings.DefaultRecognitionModule = RECOGNITIONMODULE.RM_OMNIFONT_PLUS3W;
-                settings.DefaultFillingMethod = FILLINGMETHOD.FM_OMNIFONT;
-                settings.DefaultFilter = CHR_FILTER.FILTER_UPPERCASE;
+                DPI = new SIZE
+                (
+                      (int)data.Image.HorizontalResolution,
+                      (int)data.Image.VerticalResolution
+                ),
+                Size = new SIZE
+                (
+                    data.Image.Width, 
+                    data.Image.Height
+                ),
+                BitsPerPixel = 24
+            };
 
-                var info = new IMG_INFO
+            using (var Page = new Page(data.Image, info, _settings))
+            {
+                Page.Preprocess();
+
+                Page.Recognize();
+
+                var letters = Page[IMAGEINDEX.II_CURRENT].GetLetters();
+
+                if (letters.Length == 0)
                 {
-                    DPI = new SIZE(
-                        (int)scaledImage.HorizontalResolution,
-                        (int)scaledImage.VerticalResolution),
-                    Size = new SIZE(scaledImage.Width, scaledImage.Height),
-                    BitsPerPixel = 24
-                };
-
-                using (var Page = new Page(scaledImage, info, settings))
-                {
-                    Page.Preprocess();
-
-                    Page.Recognize();
-
-                    var letters = Page[IMAGEINDEX.II_CURRENT].GetLetters();
-
-                    if (letters.Length == 0)
-                    {
-                        p.WaitHandle.Signal();
-                        return;
-                    }
-
-                    var text = string.Empty;
-
-                    foreach (LETTER letter in letters)
-                    {
-                        if (!char.IsWhiteSpace(letter.code))
-                            text += letter.code;
-                    }
-
-                    OnRecognizedText(text, true);
+                    return;
                 }
+
+                var text = string.Empty;
+
+                foreach (LETTER letter in letters)
+                {
+                    if (char.IsLetter(letter.code))
+                        text += letter.code;
+                }
+
+                OnRecognizedText(text);
             }
-
-            p.WaitHandle.Signal();
-        }
-
-        private Bitmap scaleImage(Bitmap img, float percentage)
-        {
-            int originalW = img.Width;
-            int originalH = img.Height;
-
-            int resizedW = (int)(originalW * percentage);
-            int resizedH = (int)(originalH * percentage);
-
-            Bitmap bmp = new Bitmap(resizedW, resizedH);
-
-            using (var graphic = Graphics.FromImage(bmp))
-            {
-                graphic.DrawImage(img, 0, 0, resizedW, resizedH);
-            }
-
-            return bmp;
-        }
+        }        
     }
 }

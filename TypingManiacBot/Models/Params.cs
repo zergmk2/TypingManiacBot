@@ -6,6 +6,5 @@ namespace TypingBot.Models
     public class Params
     {
         public Bitmap Image { get; set; }
-        public CountdownEvent WaitHandle { get; set; }
     }
 }
