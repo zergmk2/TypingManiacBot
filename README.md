@@ -6,3 +6,8 @@ The application constantly takes a screenshot of the browser control, process th
 Major components used:
 - Accord.NET, for detecting the blobs inside the browser-shot.
 - Nuance OmniPage Capture SDK v20 x86, for integrating the OCR to process the blobs and extract the word from them.
+
+FAQ
+
+Q: Why did you choose to use Nuance's ocr engine out of all the publicly free engines out there?
+A: Because it is the ONLY ocr engine that supports all the blobs colors without any special preprocessing to the image.
