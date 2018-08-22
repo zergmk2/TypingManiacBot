@@ -5,11 +5,9 @@ using TypingBot.Contracts;
 using TypingBot.EventArgs;
 using TypingBot.Extensions;
 using TypingBot.WinAPI;
-//using TypingBot.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Accord.Video;
-using System.Runtime.InteropServices;
 
 namespace TypingBot
 {
@@ -38,11 +36,6 @@ namespace TypingBot
 
             this.blobDetector = blobDetector;
             this.blobDetector.DetectedBlobs += blobDetector_DetectedBlobs;
-        }
-
-        private void ScreenCaptureStream_NewFrame(object sender, NewFrameEventArgs eventArgs)
-        {
-            BlobPreview.Image = eventArgs.Frame;
         }
 
         private void button1_Click(object sender, System.EventArgs e)
