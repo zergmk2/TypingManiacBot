@@ -12,3 +12,5 @@ FAQ
 Q: Why did you choose to use Nuance's ocr engine out of all the publicly free engines out there?
 
 A: Because it is the ONLY ocr engine that supports all the blobs colors without any special preprocessing to the image.
+
+![Preview](https://media.giphy.com/media/3kD720uJrRZXKCWLAf/giphy.gif)
