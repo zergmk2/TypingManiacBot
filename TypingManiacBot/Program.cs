@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
-using TypingBot.Detectors;
-using TypingBot.Engines;
+using TypingBot.BlobDetectors;
+using TypingBot.OcrEngines;
 
 namespace TypingBot
 {
@@ -15,7 +15,7 @@ namespace TypingBot
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1(new OmniPageEngine(), new AccordDetector()));
+            Application.Run(new Form1(new OmniPageOcrEngine(), new AccordDetector()));
         }
     }
 }

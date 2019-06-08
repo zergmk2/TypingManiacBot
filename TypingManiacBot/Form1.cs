@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Accord.Video;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
-using TypingBot.Contracts;
-using TypingBot.EventArgs;
-using TypingBot.Extensions;
-using TypingBot.WinAPI;
 using System.Linq;
 using System.Threading.Tasks;
-using Accord.Video;
+using System.Windows.Forms;
+using TypingBot.BlobDetectors;
+using TypingBot.Extensions;
+using TypingBot.OcrEngines;
+using TypingBot.WinAPI;
 
 namespace TypingBot
 {
@@ -29,13 +29,13 @@ namespace TypingBot
                 webBrowser1.Handle,
                 new Rectangle(0, 0, webBrowser1.Width, webBrowser1.Height)
             );
-            windowCapture.NewFrame += WindowCapture_NewFrame;
+            windowCapture.NewFrame += NewFrame;
 
             this.ocrEngine = ocrEngine;
-            this.ocrEngine.RecognizedText += ocrEngine_RecognizedText;
+            this.ocrEngine.RecognizedText += RecognizedText;
 
             this.blobDetector = blobDetector;
-            this.blobDetector.DetectedBlobs += blobDetector_DetectedBlobs;
+            this.blobDetector.DetectedBlobs += DetectedBlobs;
         }
 
         private void button1_Click(object sender, System.EventArgs e)
@@ -52,38 +52,38 @@ namespace TypingBot
             }
         }
 
-        private void WindowCapture_NewFrame(object sender, NewFrameEventArgs eventArgs)
+        private void NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
             blobDetector.ProcessImage(eventArgs.Frame);
         }
 
-        private void blobDetector_DetectedBlobs(object sender, DetectedBlobsArgs e)
+        private void DetectedBlobs(object sender, DetectedBlobsArgs e)
         {
             BlobPreview.InvokeAction(() => BlobPreview.Image = new Bitmap(e.Blobs.First()));
 
             ocrEngine.ProcessImages(e.Blobs);
         }
 
-        private void ocrEngine_RecognizedText(object sender, RecognizedTextArgs e)
+        private void RecognizedText(object sender, RecognizedTextArgs e)
         {
             txtOutput.InvokeAction(() => txtOutput.Text = e.Text);
         }
 
         private void Form1_Load(object sender, System.EventArgs e)
         {
-            webBrowser1.Navigate("http://media.mindjolt.com/media/typing-maniac.swf?izo0ri");
+            webBrowser1.Navigate("http://games.coolgames.com/typing-maniac/en/1.0/typing-maniac.swf");
         }
 
         private void textBox1_TextChanged(object sender, System.EventArgs e)
         {
             foreach (char c in txtOutput.Text.ToLower())
             {
-                user32.PostMessage(wbAxHandle, WindowMessages.WM_KEYDOWN, user32.VkKeyScan(c), 0);
-                user32.PostMessage(wbAxHandle, WindowMessages.WM_KEYUP, user32.VkKeyScan(c), 0);
+                User32Helper.PostMessage(wbAxHandle, User32Helper.WM_KEYDOWN, User32Helper.VkKeyScan(c), 0);
+                User32Helper.PostMessage(wbAxHandle, User32Helper.WM_KEYUP, User32Helper.VkKeyScan(c), 0);
             }
 
-            user32.PostMessage(wbAxHandle, WindowMessages.WM_KEYDOWN, VirtualKeys.VK_RETURN, 0);
-            user32.PostMessage(wbAxHandle, WindowMessages.WM_KEYUP, VirtualKeys.VK_RETURN, 0);
+            User32Helper.PostMessage(wbAxHandle, User32Helper.WM_KEYDOWN, User32Helper.VK_RETURN, 0);
+            User32Helper.PostMessage(wbAxHandle, User32Helper.WM_KEYUP, User32Helper.VK_RETURN, 0);
         }
 
         private void btnReload_Click(object sender, System.EventArgs e)

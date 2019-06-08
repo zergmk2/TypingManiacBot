@@ -16,13 +16,13 @@ namespace TypingBot.Extensions
                 "MacromediaFlashPlayerActiveX"
             };
 
-            var handle = user32.FindWindowEx(browser.Handle, IntPtr.Zero, "Shell Embedding", null);
+            var handle = User32Helper.FindWindowEx(browser.Handle, IntPtr.Zero, "Shell Embedding", null);
 
             childWindows.ForEach(
             (window) =>
             {
                 if (handle != null)
-                    handle = user32.FindWindowEx(handle, IntPtr.Zero, window, null);
+                    handle = User32Helper.FindWindowEx(handle, IntPtr.Zero, window, null);
             });
 
             return handle;

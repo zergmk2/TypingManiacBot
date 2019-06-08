@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Drawing;
-using TypingBot.EventArgs;
 
-namespace TypingBot.Contracts
+namespace TypingBot.BlobDetectors
 {
     public interface IBlobDetector
     {

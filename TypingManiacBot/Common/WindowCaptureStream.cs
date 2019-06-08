@@ -450,8 +450,7 @@ namespace Accord.Video
                                 // reset whatever listeners had done with the frame
                                 displayContext.args.Frame = displayContext.original;
 
-                                if (NewFrame != null)
-                                    NewFrame(this, displayContext.args);
+                                NewFrame?.Invoke(this, displayContext.args);
                             }
 #if !NET35
                         }));
@@ -497,8 +496,7 @@ namespace Accord.Video
                 c.args.Frame.Dispose();
             }
 
-            if (PlayingFinished != null)
-                PlayingFinished(this, ReasonToFinishPlaying.StoppedByUser);
+            PlayingFinished?.Invoke(this, ReasonToFinishPlaying.StoppedByUser);
         }
 
         [DllImport("gdi32.dll")]

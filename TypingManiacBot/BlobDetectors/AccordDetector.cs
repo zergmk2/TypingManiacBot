@@ -1,17 +1,16 @@
-﻿using System.Drawing;
-using Accord;
+﻿using Accord;
 using Accord.Imaging;
 using Accord.Imaging.Filters;
-using TypingBot.Contracts;
 using System;
-using TypingBot.EventArgs;
 using System.Collections.Generic;
-using TypingBot.Extensions;
-using TypingBot.Models;
+using System.Drawing;
 using System.Linq;
 using System.Threading;
+using TypingBot.BlobDetectors;
+using TypingBot.Extensions;
+using TypingBot.Models;
 
-namespace TypingBot.Detectors
+namespace TypingBot.BlobDetectors
 {
     public class AccordDetector : IBlobDetector
     {
@@ -61,14 +60,13 @@ namespace TypingBot.Detectors
             );
         }
 
-        static readonly object proclock = new object();
-        static readonly object croplock = new object();
+        static readonly object work_lock = new object();
 
         private void doWork(object o)
         {
             var data = o as Params;
 
-            lock (proclock)
+            lock (work_lock)
             {
                 using (var dummyImage = new Bitmap(data.Image))
                 {
@@ -76,26 +74,23 @@ namespace TypingBot.Detectors
 
                     blobCounter.ProcessImage(dummyImage);
                 }
-            }
 
-            var rects = blobCounter.GetObjectsRectangles();
+                var rects = blobCounter.GetObjectsRectangles();
 
-            if (rects.Count() == 0)
-            {
-                return;
-            }
+                if (rects.Count() == 0)
+                {
+                    return;
+                }
 
-            var result = new List<Bitmap>(rects.Count());
+                var result = new List<Bitmap>(rects.Count());
 
-            foreach (Rectangle rect in rects)
-            {
-                lock (croplock)
+                foreach (Rectangle rect in rects)
                 {
                     result.Add(data.Image.Crop(rect));
                 }
-            }
 
-            OnDetectedBlobs(result);
+                OnDetectedBlobs(result);
+            }
         }
     }
 }

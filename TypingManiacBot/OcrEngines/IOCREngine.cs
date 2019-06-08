@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using TypingBot.EventArgs;
 
-namespace TypingBot.Contracts
+namespace TypingBot.OcrEngines
 {
     public interface IOCREngine
     {

@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Drawing;
-using TypingBot.Contracts;
-using TypingBot.EventArgs;
 using System.Collections.Generic;
 using TypingBot.Models;
 using Nuance.OmniPage.CSDK.Objects;
 using Nuance.OmniPage.CSDK.ArgTypes;
 using System.Threading;
 
-namespace TypingBot.Engines
+namespace TypingBot.OcrEngines
 {
-    public class OmniPageEngine : IOCREngine
+    public class OmniPageOcrEngine : IOCREngine
     {
         private readonly SettingCollection _settings;
 
-        public OmniPageEngine()
+        public OmniPageOcrEngine()
         {
             Engine.Init(null, null, csdkpath: @"C:\Program Files (x86)\Nuance\OPCaptureSDK20\Bin");
 
@@ -41,22 +39,14 @@ namespace TypingBot.Engines
 
         public void ProcessImage(Bitmap image)
         {
-            ThreadPool.QueueUserWorkItem
-            (
-                new WaitCallback(doWork), 
-                new Params { Image = image }
-            );
+            ThreadPool.QueueUserWorkItem((o) => doWork(new Params { Image = image }));
         }
 
         public void ProcessImages(IEnumerable<Bitmap> images)
         {
             foreach (Bitmap image in images)
             {
-                ThreadPool.QueueUserWorkItem
-                (
-                    new WaitCallback(doWork),
-                    new Params { Image = image }
-                );
+                ThreadPool.QueueUserWorkItem((o) => doWork(new Params { Image = image }));
             }          
         }
 
