@@ -38,7 +38,7 @@ namespace TypingBot
             this.blobDetector.DetectedBlobs += DetectedBlobs;
         }
 
-        private void button1_Click(object sender, System.EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             if (windowCapture.IsRunning)
             {
@@ -69,12 +69,12 @@ namespace TypingBot
             txtOutput.InvokeAction(() => txtOutput.Text = e.Text);
         }
 
-        private void Form1_Load(object sender, System.EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
             webBrowser1.Navigate("http://games.coolgames.com/typing-maniac/en/1.0/typing-maniac.swf");
         }
 
-        private void textBox1_TextChanged(object sender, System.EventArgs e)
+        private void textBox1_TextChanged(object sender, EventArgs e)
         {
             foreach (char c in txtOutput.Text.ToLower())
             {
@@ -86,12 +86,12 @@ namespace TypingBot
             User32Helper.PostMessage(wbAxHandle, User32Helper.WM_KEYUP, User32Helper.VK_RETURN, 0);
         }
 
-        private void btnReload_Click(object sender, System.EventArgs e)
+        private void btnReload_Click(object sender, EventArgs e)
         {
             webBrowser1.Refresh(WebBrowserRefreshOption.IfExpired);
         }
 
-        private void cmbSpecial_SelectionChangeCommitted(object sender, System.EventArgs e)
+        private void cmbSpecial_SelectionChangeCommitted(object sender, EventArgs e)
         {
             txtOutput.Text = cmbSpecial.GetItemText(cmbSpecial.SelectedItem);
         }

@@ -15,7 +15,7 @@ namespace TypingBot
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1(new OmniPageOcrEngine(), new AccordDetector()));
+            Application.Run(new Form1(new OmniPageOcrEngine(), new AccordBlobDetector()));
         }
     }
 }

@@ -89,7 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Common\WindowCaptureStream.cs" />
-    <Compile Include="BlobDetectors\AccordDetector.cs" />
+    <Compile Include="BlobDetectors\AccordBlobDetector.cs" />
     <Compile Include="OcrEngines\RecognizedTextArgs.cs" />
     <Compile Include="Extensions\BitmapExtensions.cs" />
     <Compile Include="Extensions\ControlExtensions.cs" />

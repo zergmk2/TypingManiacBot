@@ -1,10 +1,10 @@
-﻿using System;
-using System.Drawing;
-using System.Collections.Generic;
-using TypingBot.Models;
+﻿using Nuance.OmniPage.CSDK.ArgTypes;
 using Nuance.OmniPage.CSDK.Objects;
-using Nuance.OmniPage.CSDK.ArgTypes;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
+using TypingBot.Models;
 
 namespace TypingBot.OcrEngines
 {
@@ -29,10 +29,10 @@ namespace TypingBot.OcrEngines
         {
             RecognizedText?.Invoke
             (
-                this, 
+                this,
                 new RecognizedTextArgs
                 {
-                    Text = text                  
+                    Text = text
                 }
             );
         }
@@ -47,7 +47,7 @@ namespace TypingBot.OcrEngines
             foreach (Bitmap image in images)
             {
                 ThreadPool.QueueUserWorkItem((o) => doWork(new Params { Image = image }));
-            }          
+            }
         }
 
         private void doWork(object o)
@@ -63,7 +63,7 @@ namespace TypingBot.OcrEngines
                 ),
                 Size = new SIZE
                 (
-                    data.Image.Width, 
+                    data.Image.Width,
                     data.Image.Height
                 ),
                 BitsPerPixel = 24
@@ -92,6 +92,6 @@ namespace TypingBot.OcrEngines
 
                 OnRecognizedText(text);
             }
-        }        
+        }
     }
 }

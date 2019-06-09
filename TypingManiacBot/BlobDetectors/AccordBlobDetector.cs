@@ -6,20 +6,19 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
-using TypingBot.BlobDetectors;
 using TypingBot.Extensions;
 using TypingBot.Models;
 
 namespace TypingBot.BlobDetectors
 {
-    public class AccordDetector : IBlobDetector
+    public class AccordBlobDetector : IBlobDetector
     {
         private const int max = 96;
 
         private readonly ColorFiltering backgroundFilter;
         private readonly BlobCounter blobCounter;
 
-        public AccordDetector()
+        public AccordBlobDetector()
         {
             backgroundFilter = new ColorFiltering
             {
@@ -39,25 +38,15 @@ namespace TypingBot.BlobDetectors
         }
 
         public event EventHandler<DetectedBlobsArgs> DetectedBlobs;
-        private void OnDetectedBlobs(IEnumerable<Bitmap> blobs)
+
+        private void RaiseDetectedBlobs(IEnumerable<Bitmap> blobs)
         {
-            DetectedBlobs?.Invoke
-            (
-                this,
-                new DetectedBlobsArgs
-                {
-                    Blobs = blobs
-                }
-            );
+            DetectedBlobs?.Invoke(this, new DetectedBlobsArgs { Blobs = blobs });
         }
 
         public void ProcessImage(Bitmap image)
         {
-            ThreadPool.QueueUserWorkItem
-            (
-                new WaitCallback(doWork),
-                new Params { Image = new Bitmap(image) }
-            );
+            ThreadPool.QueueUserWorkItem((o) => doWork(new Params { Image = new Bitmap(image) }));
         }
 
         static readonly object work_lock = new object();
@@ -68,28 +57,30 @@ namespace TypingBot.BlobDetectors
 
             lock (work_lock)
             {
-                using (var dummyImage = new Bitmap(data.Image))
+                using (var filteredImage = new Bitmap(data.Image))
                 {
-                    backgroundFilter.ApplyInPlace(dummyImage);
+                    backgroundFilter.ApplyInPlace(filteredImage);
 
-                    blobCounter.ProcessImage(dummyImage);
+                    blobCounter.ProcessImage(filteredImage);
                 }
 
                 var rects = blobCounter.GetObjectsRectangles();
 
-                if (rects.Count() == 0)
+                int rectsCount = rects.Count();
+
+                if (rectsCount == 0)
                 {
                     return;
                 }
 
-                var result = new List<Bitmap>(rects.Count());
+                var result = new List<Bitmap>(rectsCount);
 
                 foreach (Rectangle rect in rects)
                 {
                     result.Add(data.Image.Crop(rect));
                 }
 
-                OnDetectedBlobs(result);
+                RaiseDetectedBlobs(result);
             }
         }
     }
