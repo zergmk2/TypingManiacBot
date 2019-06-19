@@ -10,6 +10,7 @@ The application constantly takes a screenshot of the browser control, process th
 **FAQ**
 
 **Q**: Why did you choose to use Nuance's ocr engine out of all the publicly free engines out there?
+
 **A**: Because it is the ONLY ocr engine that supports all blob colors without special preprocessing to the image.
 
 ![Preview](https://media.giphy.com/media/3kD720uJrRZXKCWLAf/giphy.gif)
