@@ -5,7 +5,7 @@ The application constantly takes a screenshot of the browser control, process th
 
 *Major components used*:
 - **Accord.NET** - *for detecting the blobs inside the browser-shot*.
-- **Nuance OmniPage Capture SDK v20 x86** - *for integrating the OCR to process the blobs and extract the word from them*.
+- **Nuance OmniPage Capture SDK** - *for integrating the OCR to process the blobs and extract the word from them*.
 
 **FAQ**
 
