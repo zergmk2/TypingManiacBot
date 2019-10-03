@@ -8,4 +8,6 @@ The application constantly takes a screenshot of the browser control, process th
 - [Accord.NET](http://accord-framework.net/) - *for detecting the blobs inside the browser-shot*.
 - [Nuance OmniPage Capture SDK](https://www.nuance.com/print-capture-and-pdf-solutions/optical-character-recognition/omnipage/omnipage-capture-sdk-for-windows.html) - *for integrating the OCR to process the blobs and extract the word in plain text from them*.
 
+# Demo Preview:
+
 ![Preview](demo.gif)
